@@ -12,9 +12,15 @@ import FakeCallSection from './components/sections/FakeCallSection'
 import SafeWalkSection from './components/sections/SafeWalkSection'
 import DashboardSection from './components/sections/DashboardSection'
 import { useEmergencyStore } from './stores/emergencyStore'
+import { useAuth } from './context/AuthContext'
+import { useSOS } from './context/SOSContext'
+import useLiveLocation from './hooks/useLiveLocation'
+import AuthModal from './components/ui/AuthModal'
 
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const { user, isAuthenticated, logout } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -31,25 +37,50 @@ function Navbar() {
   ]
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled ? 'glass py-3' : 'py-5'}`} id="main-navbar">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
-        <a href="#landing-section" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan/30 to-saffron/20 border border-cyan/30 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(0,217,255,0.3)] transition-shadow">
-            <span className="font-hud text-[10px] font-bold text-cyan">R</span>
+    <>
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled ? 'glass py-3' : 'py-5'}`} id="main-navbar">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
+          <a href="#landing-section" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan/30 to-saffron/20 border border-cyan/30 flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(0,217,255,0.3)] transition-shadow">
+              <span className="font-hud text-[10px] font-bold text-cyan">R</span>
+            </div>
+            <span className="font-hud text-sm tracking-[0.15em] text-white/80 hidden md:block">RAKSHA</span>
+          </a>
+          <div className="hidden md:flex items-center gap-8">
+            {links.map(l => (
+              <a key={l.label} href={l.href} className="font-hud text-[10px] tracking-[0.15em] text-white/40 hover:text-cyan transition-colors duration-300">{l.label}</a>
+            ))}
           </div>
-          <span className="font-hud text-sm tracking-[0.15em] text-white/80 hidden md:block">RAKSHA</span>
-        </a>
-        <div className="hidden md:flex items-center gap-8">
-          {links.map(l => (
-            <a key={l.label} href={l.href} className="font-hud text-[10px] tracking-[0.15em] text-white/40 hover:text-cyan transition-colors duration-300">{l.label}</a>
-          ))}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse-glow" />
+              <span className="font-hud text-[9px] tracking-wider text-green-400/70 hidden sm:inline">ONLINE</span>
+            </div>
+            
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <span className="font-hud text-[9px] text-cyan tracking-wider text-glow hidden md:inline">[{user.name.toUpperCase()}]</span>
+                <button
+                  onClick={logout}
+                  className="font-hud text-[8px] tracking-[0.15em] text-emergency border border-emergency/30 hover:border-emergency hover:bg-emergency/10 px-2 py-1 rounded-sm cursor-pointer transition-all duration-300"
+                >
+                  LOGOUT
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="font-hud text-[8px] tracking-[0.15em] text-cyan border border-cyan/30 hover:border-cyan hover:bg-cyan/10 px-2.5 py-1 rounded-sm cursor-pointer transition-all duration-300"
+              >
+                SECURE ACCESS
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse-glow" />
-          <span className="font-hud text-[9px] tracking-wider text-green-400/70">SYSTEM ONLINE</span>
-        </div>
-      </div>
-    </nav>
+      </nav>
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+    </>
   )
 }
 
@@ -89,7 +120,12 @@ function Footer() {
 
 export default function App() {
   const [loaded, setLoaded] = useState(false)
+  
+  // Retrieve store states for emergency overlays
   const isEmergency = useEmergencyStore(s => s.isEmergency)
+
+  // Invoke global real-time GPS location tracker hook
+  useLiveLocation();
 
   // Lenis smooth scrolling
   useEffect(() => {

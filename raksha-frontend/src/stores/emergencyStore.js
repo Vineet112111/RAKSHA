@@ -19,9 +19,6 @@ export const useEmergencyStore = create((set, get) => ({
         set({ sosCountdown: 0, alertPhase: 'transmitting' })
         setTimeout(() => {
           set({ alertPhase: 'transmitted' })
-          setTimeout(() => {
-            set({ isEmergency: false, alertPhase: 'idle', sosCountdown: null })
-          }, 4000)
         }, 2000)
       } else {
         set({ sosCountdown: sosCountdown - 1 })
