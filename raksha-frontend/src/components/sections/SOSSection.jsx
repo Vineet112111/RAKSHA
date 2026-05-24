@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEmergencyStore } from '../../stores/emergencyStore'
 import { useSOS } from '../../context/SOSContext'
@@ -8,13 +8,12 @@ export default function SOSSection() {
   const { isEmergency, sosCountdown, alertPhase, activateSOS, resetSOS } = useEmergencyStore()
   const { triggerSOS, cancelSOS, imSafe, activeSOS } = useSOS()
   const { isAuthenticated } = useAuth()
-  const canvasRef = useRef(null)
 
   // Listen to visual state change and trigger backend API
   useEffect(() => {
     const uplinkSOS = async () => {
       if (alertPhase === 'transmitting') {
-        console.log('[SOS UPLINK] Fetching coordinates...');
+        console.log('[SOS UPLINK] Fetching GPS coordinates...');
         
         const transmit = async (lat, lng, isSimulated = false) => {
           const notes = isSimulated 
@@ -38,7 +37,7 @@ export default function SOSSection() {
               transmit(pos.coords.latitude, pos.coords.longitude, false);
             },
             (err) => {
-              console.warn('[SOS GEOLOCATION] Access denied or timed out. Falling back to simulated coordinates.');
+              console.warn('[SOS GEOLOCATION] Access denied. Falling back to Mumbai demo coordinates.');
               transmit(19.0760, 72.8777, true); // Fallback Mumbai coordinates
             },
             { enableHighAccuracy: true, timeout: 5000 }
@@ -53,51 +52,9 @@ export default function SOSSection() {
     uplinkSOS();
   }, [alertPhase, triggerSOS, resetSOS]);
 
-  const drawEmergencyRings = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const w = canvas.width = canvas.offsetWidth * 2
-    const h = canvas.height = canvas.offsetHeight * 2
-    let t = 0
-
-    const animate = () => {
-      t += 0.02
-      ctx.clearRect(0, 0, w, h)
-      const cx = w / 2, cy = h / 2
-
-      // Emergency rings
-      for (let i = 0; i < 8; i++) {
-        const radius = ((t * 100 + i * 50) % 400)
-        const alpha = (1 - radius / 400) * (isEmergency ? 0.5 : 0.15)
-        ctx.beginPath()
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-        ctx.strokeStyle = isEmergency ? `rgba(255, 46, 46, ${alpha})` : `rgba(0, 217, 255, ${alpha})`
-        ctx.lineWidth = isEmergency ? 3 : 1
-        ctx.stroke()
-      }
-
-      // Center pulse
-      const pulseR = 40 + Math.sin(t * 4) * 10
-      ctx.beginPath()
-      ctx.arc(cx, cy, pulseR, 0, Math.PI * 2)
-      ctx.fillStyle = isEmergency ? 'rgba(255, 46, 46, 0.15)' : 'rgba(0, 217, 255, 0.08)'
-      ctx.fill()
-
-      requestAnimationFrame(animate)
-    }
-    const animId = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animId)
-  }, [isEmergency])
-
-  useEffect(() => {
-    const cleanAnim = drawEmergencyRings()
-    return cleanAnim
-  }, [drawEmergencyRings])
-
   const handleSOSClick = () => {
     if (!isAuthenticated) {
-      alert('[SECURE ACCESS REQUIRED] Please register or sign in via the "SECURE ACCESS" option in the navbar to connect with real-time dispatch and contacts.');
+      alert('[ACCESS REQUIRED] Please register or sign in via the "Secure Access" button in the navbar to connect with real-time emergency contacts.');
       return;
     }
     activateSOS()
@@ -130,100 +87,135 @@ export default function SOSSection() {
   };
 
   return (
-    <section className="section-container min-h-screen relative overflow-hidden" id="sos-section">
-      {/* Emergency overlay */}
-      <AnimatePresence>
-        {isEmergency && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-20 pointer-events-none"
-          >
-            <div className="emergency-vignette" />
-            {/* Siren sweep */}
-            <motion.div
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-              className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-emergency/10 to-transparent"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />
-
-      <div className="relative z-10 max-w-3xl mx-auto w-full text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <p className="font-hud text-[10px] tracking-[0.4em] text-emergency/60 mb-4">◆ EMERGENCY PROTOCOL</p>
-          <h2 className="font-hud text-3xl md:text-5xl font-bold text-glow-emergency mb-4">SOS COMMAND</h2>
-          <p className="text-white/40 text-sm mb-12">One touch. Instant protection. Every second counts.</p>
+    <section className="section-container relative overflow-hidden py-24" id="sos-section">
+      <div className="relative z-10 max-w-2xl mx-auto w-full text-center px-4">
+        
+        <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
+          <span className="text-xs font-bold text-saffron uppercase tracking-widest bg-saffron/10 px-3 py-1 rounded-full">
+            Emergency Dispatch Console
+          </span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mt-4 mb-2">SOS Alert Trigger</h2>
+          <p className="text-white/50 text-sm max-w-md mx-auto">
+            Press and hold or tap to send an immediate alert with your live GPS location to all registered contacts.
+          </p>
         </motion.div>
 
-        {/* SOS Button */}
-        <AnimatePresence mode="wait">
-          {alertPhase === 'idle' && (
-            <motion.div key="idle" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}>
-              <button
-                onClick={handleSOSClick}
-                id="sos-trigger-btn"
-                className="relative w-40 h-40 md:w-52 md:h-52 rounded-full cursor-pointer group"
+        {/* SOS Button Panel */}
+        <div className="flex flex-col items-center justify-center min-h-[300px]">
+          <AnimatePresence mode="wait">
+            
+            {alertPhase === 'idle' && (
+              <motion.div 
+                key="idle" 
+                initial={{ scale: 0.9, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }} 
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="relative"
               >
-                <div className="absolute inset-0 rounded-full bg-emergency/10 border-2 border-emergency/30 group-hover:border-emergency/60 group-hover:bg-emergency/20 transition-all duration-500 group-hover:shadow-[0_0_60px_rgba(255,46,46,0.4)]" />
-                <div className="absolute inset-4 rounded-full bg-emergency/5 border border-emergency/20 animate-pulse-glow" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-hud text-3xl md:text-4xl font-bold text-emergency">SOS</span>
+                {/* Pulsing circles behind button */}
+                <div className="absolute inset-0 rounded-full bg-emergency/20 sos-pulse-ring" />
+                <div className="absolute inset-0 rounded-full bg-emergency/15 sos-pulse-ring" style={{ animationDelay: '0.6s' }} />
+                
+                <button
+                  onClick={handleSOSClick}
+                  id="sos-trigger-btn"
+                  className="relative w-48 h-48 md:w-56 md:h-56 rounded-full bg-emergency hover:bg-emergency-dark flex flex-col items-center justify-center shadow-[0_15px_45px_rgba(217,4,41,0.4)] cursor-pointer transition-all duration-300 transform active:scale-95 group border-4 border-white/10"
+                >
+                  <span className="text-white text-4xl md:text-5xl font-black tracking-wider uppercase">SOS</span>
+                  <span className="text-white/70 text-[10px] font-bold tracking-widest uppercase mt-2 group-hover:text-white transition-colors">
+                    Press to Trigger
+                  </span>
+                </button>
+              </motion.div>
+            )}
+
+            {alertPhase === 'countdown' && (
+              <motion.div 
+                key="countdown" 
+                initial={{ scale: 1.2, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="text-center"
+              >
+                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border-4 border-saffron bg-navy-light flex items-center justify-center shadow-2xl mx-auto">
+                  <span className="text-7xl font-bold text-saffron">{sosCountdown}</span>
                 </div>
-              </button>
-            </motion.div>
-          )}
-
-          {alertPhase === 'countdown' && (
-            <motion.div key="countdown" initial={{ scale: 2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="animate-glitch">
-              <p className="font-hud text-[120px] md:text-[200px] font-black text-emergency text-glow-emergency">{sosCountdown}</p>
-              <p className="font-hud text-xs tracking-[0.3em] text-emergency/60 mt-4">TRANSMITTING IN...</p>
-            </motion.div>
-          )}
-
-          {alertPhase === 'transmitting' && (
-            <motion.div key="transmitting" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="w-20 h-20 mx-auto border-4 border-emergency/30 border-t-emergency rounded-full animate-spin" />
-              <p className="font-hud text-lg text-emergency mt-6 animate-pulse-glow">ESTABLISHING ENCRYPTED UPLINK...</p>
-            </motion.div>
-          )}
-
-          {alertPhase === 'transmitted' && (
-            <motion.div key="transmitted" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-              <div className="w-24 h-24 mx-auto rounded-full bg-green-500/20 border-2 border-green-500/60 flex items-center justify-center mb-6 animate-pulse-glow">
-                <span className="text-4xl">✓</span>
-              </div>
-              <p className="font-hud text-2xl text-green-400 text-glow mb-2">BEACON ACTIVE</p>
-              <p className="text-white/40 text-xs mb-1">Room ID: <span className="text-cyan font-bold font-hud">{activeSOS?.sosId || 'SOS-ACTIVE'}</span></p>
-              <p className="text-white/40 text-xs mb-8">Transmitting GPS coordinates every 5 seconds...</p>
-              
-              <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
+                <p className="text-white/60 text-xs font-semibold tracking-widest uppercase mt-6">
+                  Transmitting alert in...
+                </p>
                 <button
                   onClick={handleCancelSOS}
-                  className="bg-black/40 border border-emergency/50 hover:border-emergency text-emergency hover:bg-emergency/15 font-hud text-[10px] tracking-widest p-3 rounded-sm transition-all duration-300 cursor-pointer"
+                  className="mt-4 text-xs font-bold text-emergency hover:underline cursor-pointer"
                 >
-                  CANCEL ALERT
+                  Cancel Immediately
                 </button>
-                <button
-                  onClick={handleImSafe}
-                  className="bg-black/40 border border-green-500/50 hover:border-green-500 text-green-400 hover:bg-green-500/15 font-hud text-[10px] tracking-widest p-3 rounded-sm transition-all duration-300 cursor-pointer"
-                >
-                  I'M SAFE
-                </button>
-              </div>
+              </motion.div>
+            )}
 
-              <div className="space-y-2 max-w-sm mx-auto">
-                {['Emergency GPS Broadcast — ACTIVE', 'Alert Uplink to Responders — DISPATCHED', 'Holographic Map Track — ESTABLISHED'].map((c, i) => (
-                  <motion.div key={c} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.3 }} className="glass px-4 py-2 rounded-sm font-hud text-[9px] text-cyan/70">{c}</motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {alertPhase === 'transmitting' && (
+              <motion.div 
+                key="transmitting" 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 mx-auto border-4 border-saffron/20 border-t-saffron rounded-full animate-spin mb-6" />
+                <p className="text-saffron text-sm font-semibold tracking-widest uppercase animate-pulse">
+                  Establishing Encrypted Uplink...
+                </p>
+                <p className="text-white/40 text-xs mt-2">Retrieving coordinates & broadcasting...</p>
+              </motion.div>
+            )}
+
+            {alertPhase === 'transmitted' && (
+              <motion.div 
+                key="transmitted" 
+                initial={{ scale: 0.95, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }}
+                className="w-full max-w-md mx-auto"
+              >
+                {/* Active alert details panel */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-xl mb-6 backdrop-blur-md">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 border border-green-500/40 flex items-center justify-center mb-4">
+                    <span className="text-green-500 text-2xl font-bold">✓</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-green-400">Alert Transmitted</h3>
+                  <p className="text-white/40 text-xs mt-1">
+                    SOS Room ID: <span className="font-semibold text-saffron">{activeSOS?.sosId}</span>
+                  </p>
+                  
+                  <div className="mt-6 border-t border-white/5 pt-4 space-y-3">
+                    <div className="flex items-center gap-3 bg-white/[0.02] px-4 py-2.5 rounded-lg border border-white/5">
+                      <span className="text-xs text-saffron font-semibold">●</span>
+                      <span className="text-xs text-white/60 text-left">Real-time GPS tracking stream established.</span>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white/[0.02] px-4 py-2.5 rounded-lg border border-white/5">
+                      <span className="text-xs text-saffron font-semibold">●</span>
+                      <span className="text-xs text-white/60 text-left">WhatsApp emergency dispatches sent to contacts.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleImSafe}
+                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold text-xs tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-lg cursor-pointer"
+                  >
+                    I'M SAFE NOW
+                  </button>
+                  <button
+                    onClick={handleCancelSOS}
+                    className="w-full sm:w-auto bg-transparent border border-white/20 hover:border-emergency hover:bg-emergency/10 text-white/80 hover:text-white font-semibold text-xs tracking-wider px-6 py-3.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    CANCEL BEACON
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+
       </div>
     </section>
   )

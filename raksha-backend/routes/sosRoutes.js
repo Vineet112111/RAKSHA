@@ -5,12 +5,16 @@ import {
   imSafeSOS,
   getHistory,
   getActiveSOS,
+  getPublicSOS,
 } from '../controllers/sosController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Apply auth protection to all SOS routes
+// Public route for real-time tracking (no authentication required)
+router.get('/public-track/:sosId', getPublicSOS);
+
+// Apply auth protection to all subsequent SOS routes
 router.use(protect);
 
 router.post('/trigger', triggerSOS);

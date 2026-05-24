@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import HUDPanel from '../ui/HUDPanel'
 import API from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
@@ -32,47 +32,48 @@ export default function DashboardSection() {
     let t = 0
 
     const animate = () => {
-      t += 0.02
+      t += 0.015
       ctx.clearRect(0, 0, w, h)
 
-      // Radial chart
+      // Radial chart representing safety indicators
       const cx = w / 2, cy = h / 2, r = Math.min(w, h) * 0.35
       const segments = [
-        { value: 0.85, color: 'rgba(0, 217, 255, 0.6)', label: 'Safety' },
-        { value: 0.72, color: 'rgba(255, 107, 0, 0.6)', label: 'Response' },
-        { value: 0.91, color: 'rgba(0, 217, 255, 0.3)', label: 'Coverage' },
-        { value: 0.68, color: 'rgba(255, 138, 0, 0.4)', label: 'AI Score' },
+        { value: 0.94, color: 'rgba(255, 107, 0, 0.85)', label: 'Response Rate' },
+        { value: 0.88, color: 'rgba(27, 38, 59, 0.9)', label: 'Coverage Area' },
+        { value: 0.97, color: 'rgba(0, 180, 216, 0.8)', label: 'System Uptime' },
+        { value: 0.76, color: 'rgba(217, 4, 41, 0.7)', label: 'Alert Resolution' },
       ]
 
       segments.forEach((seg, i) => {
         const startAngle = (i / segments.length) * Math.PI * 2 - Math.PI / 2
         const endAngle = startAngle + (seg.value * (Math.PI * 2 / segments.length))
-        const segR = r * (0.6 + i * 0.1)
+        const segR = r * (0.65 + i * 0.1)
 
+        // Draw track
+        ctx.beginPath()
+        ctx.arc(cx, cy, segR, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)'
+        ctx.lineWidth = 6
+        ctx.stroke()
+
+        // Draw progress
         ctx.beginPath()
         ctx.arc(cx, cy, segR, startAngle, endAngle)
         ctx.strokeStyle = seg.color
         ctx.lineWidth = 8
         ctx.lineCap = 'round'
         ctx.stroke()
-
-        // Background track
-        ctx.beginPath()
-        ctx.arc(cx, cy, segR, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(255,255,255,0.03)'
-        ctx.lineWidth = 8
-        ctx.stroke()
       })
 
-      // Pulse wave
-      const waveY = h * 0.85
+      // Clean, low-frequency wave indicator
+      const waveY = h * 0.9
       ctx.beginPath()
       ctx.moveTo(0, waveY)
       for (let x = 0; x < w; x++) {
-        const y = waveY + Math.sin(x * 0.02 + t * 2) * 15 + Math.sin(x * 0.005 + t) * 8
+        const y = waveY + Math.sin(x * 0.015 + t) * 10
         ctx.lineTo(x, y)
       }
-      ctx.strokeStyle = 'rgba(0, 217, 255, 0.3)'
+      ctx.strokeStyle = 'rgba(255, 107, 0, 0.25)'
       ctx.lineWidth = 2
       ctx.stroke()
 
@@ -159,102 +160,106 @@ export default function DashboardSection() {
   };
 
   return (
-    <section className="section-container min-h-screen relative" id="dashboard-section">
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-          <p className="font-hud text-[10px] tracking-[0.4em] text-cyan/60 mb-4">◆ COMMAND ANALYTICS</p>
-          <h2 className="font-hud text-3xl md:text-5xl font-bold text-glow mb-4">LIVE DASHBOARD</h2>
+    <section className="py-24 relative" id="dashboard-section">
+      <div className="relative z-10 max-w-6xl mx-auto w-full px-6">
+        <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+          <span className="text-xs font-bold text-saffron uppercase tracking-widest bg-saffron/10 px-3 py-1 rounded-full">
+            Command Shield
+          </span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mt-4 mb-2">Security Dashboard</h2>
+          <p className="text-white/50 text-sm max-w-md mx-auto">
+            Manage your trusted circle of emergency contacts and track local security metrics.
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Radial chart */}
-          <div className="lg:col-span-2">
-            <HUDPanel title="SYSTEM PERFORMANCE">
-              <div className="relative aspect-[4/3]">
-                <canvas ref={chartRef} className="w-full h-full" />
-              </div>
-            </HUDPanel>
+        {/* Stats & System Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 safety-card p-6">
+            <h3 className="text-sm font-semibold tracking-wider text-white/40 uppercase mb-4">Safety Shield Performance</h3>
+            <div className="relative aspect-[16/9] w-full flex items-center justify-center">
+              <canvas ref={chartRef} className="w-full h-full max-h-[260px]" />
+            </div>
           </div>
 
-          {/* Stats */}
           <div className="space-y-4">
             {[
-              { label: 'TOTAL ALERTS TODAY', value: '47', change: '+12%', color: 'cyan' },
-              { label: 'ACTIVE GUARDIANS', value: '2,847', change: '+5%', color: 'saffron' },
-              { label: 'AVG RESPONSE', value: '7.2s', change: '-18%', color: 'cyan' },
-              { label: 'SAFETY INDEX', value: '94.3', change: '+3%', color: 'saffron' },
+              { label: 'Active SOS Responders', value: '24/7 Live', change: 'Online', color: 'text-saffron' },
+              { label: 'Avg Emergency Response', value: '8.4 sec', change: 'Optimized', color: 'text-green-400' },
+              { label: 'Coverage Verification', value: '98.6%', change: 'Stable', color: 'text-saffron' },
+              { label: 'Active Safety Guards', value: '1,482', change: 'Active', color: 'text-green-400' },
             ].map((stat, i) => (
-              <HUDPanel key={stat.label} delay={i * 0.1}>
-                <p className="font-hud text-[9px] text-white/30 tracking-wider">{stat.label}</p>
+              <div key={stat.label} className="safety-card p-5">
+                <p className="text-xs text-white/40 font-medium tracking-wide">{stat.label}</p>
                 <div className="flex items-end justify-between mt-2">
-                  <p className={`font-hud text-3xl font-bold text-${stat.color}`}>{stat.value}</p>
-                  <span className="font-hud text-[10px] text-green-400">{stat.change}</span>
+                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <span className="text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded-full text-white/55">
+                    {stat.change}
+                  </span>
                 </div>
-              </HUDPanel>
+              </div>
             ))}
           </div>
         </div>
 
         {/* Timeline & Contacts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          {/* Timeline */}
-          <HUDPanel title="INCIDENT TIMELINE">
-            <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Incident Timeline */}
+          <div className="safety-card p-6">
+            <h3 className="text-sm font-semibold tracking-wider text-white/40 uppercase mb-4">Security Log Trail</h3>
+            <div className="space-y-4">
               {incidents.map((inc, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-4 py-2 border-b border-white/5 last:border-0"
-                >
-                  <span className="font-hud text-[10px] text-white/30 w-12">{inc.time}</span>
-                  <div className={`w-2 h-2 rounded-full ${
+                <div key={i} className="flex items-center gap-4 py-2.5 border-b border-white/5 last:border-0 last:pb-0">
+                  <span className="text-xs text-white/30 font-medium w-12">{inc.time}</span>
+                  <div className={`w-2.5 h-2.5 rounded-full ${
                     inc.status === 'resolved' ? 'bg-green-400' :
-                    inc.status === 'completed' ? 'bg-cyan' :
-                    inc.status === 'active' ? 'bg-saffron animate-pulse-glow' :
-                    'bg-orange'
+                    inc.status === 'completed' ? 'bg-cyan-400' :
+                    'bg-saffron'
                   }`} />
-                  <span className="text-xs text-white/60 flex-1">{inc.type}</span>
-                  <span className="font-hud text-[9px] text-white/30">{inc.location}</span>
-                </motion.div>
+                  <span className="text-xs text-white/70 flex-1 font-medium">{inc.type}</span>
+                  <span className="text-[10px] text-white/35 bg-white/5 px-2 py-1 rounded-sm">{inc.location}</span>
+                </div>
               ))}
             </div>
-          </HUDPanel>
+          </div>
 
-          {/* Contacts Manager */}
-          <HUDPanel title="EMERGENCY CONTACTS (MAX 5)">
+          {/* Emergency Contacts Manager */}
+          <div className="safety-card p-6">
+            <h3 className="text-sm font-semibold tracking-wider text-white/40 uppercase mb-4">
+              Emergency Contacts (Max 5)
+            </h3>
+            
             {!isAuthenticated ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-white/10 rounded-sm bg-black/20">
-                <span className="font-hud text-[10px] text-saffron tracking-widest text-glow-saffron mb-3">[SHIELD DISABLED]</span>
-                <p className="text-xs text-white/40 max-w-xs">Please login or create a profile via "SECURE ACCESS" in the navbar to configure emergency contacts.</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-white/10 rounded-xl bg-white/[0.01] px-4">
+                <span className="text-saffron text-sm font-bold tracking-widest">[SHIELD DISABLED]</span>
+                <p className="text-xs text-white/40 max-w-xs mt-2">
+                  Please log in or create a profile via "Secure Access" in the navbar to configure emergency contacts.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {error && (
-                  <div className="p-2 border border-emergency/30 bg-emergency/10 rounded-sm">
-                    <p className="font-hud text-[9px] text-emergency">[SYSTEM ERROR]: {error}</p>
+                  <div className="p-3 border border-emergency/30 bg-emergency/10 rounded-lg">
+                    <p className="text-xs text-emergency font-medium">[SYSTEM ERROR]: {error}</p>
                   </div>
                 )}
 
                 {/* Contacts List */}
                 {loading ? (
-                  <p className="font-hud text-[10px] text-cyan animate-pulse">UPLINKING DATABASE...</p>
+                  <p className="text-xs text-saffron animate-pulse font-medium">UPLINKING DATABASE...</p>
                 ) : contacts.length === 0 ? (
-                  <p className="text-xs text-white/30 italic">No emergency contacts configured yet. Add some below.</p>
+                  <p className="text-xs text-white/35 italic">No emergency contacts configured yet. Add some below.</p>
                 ) : (
-                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
                     {contacts.map((contact) => (
-                      <div key={contact._id} className="p-3 border border-white/5 bg-white/[0.02] flex items-center justify-between rounded-sm">
+                      <div key={contact._id} className="p-3.5 border border-white/5 bg-white/[0.01] flex items-center justify-between rounded-xl">
                         {editingId === contact._id ? (
-                          <div className="flex flex-col gap-2 w-full pr-2">
+                          <div className="flex flex-col gap-2.5 w-full pr-2">
                             <input
                               type="text"
                               value={editFormData.name}
                               onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                               placeholder="Name"
-                              className="bg-black border border-white/15 text-xs text-white p-1 rounded-sm outline-none"
+                              className="bg-navy border border-white/10 text-xs text-white p-2.5 rounded-lg outline-none focus:border-saffron"
                             />
                             <div className="grid grid-cols-2 gap-2">
                               <input
@@ -262,42 +267,44 @@ export default function DashboardSection() {
                                 value={editFormData.phone}
                                 onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                                 placeholder="Phone"
-                                className="bg-black border border-white/15 text-[10px] text-white p-1 rounded-sm outline-none"
+                                className="bg-navy border border-white/10 text-xs text-white p-2.5 rounded-lg outline-none focus:border-saffron"
                               />
                               <input
                                 type="text"
                                 value={editFormData.relation}
                                 onChange={(e) => setEditFormData({ ...editFormData, relation: e.target.value })}
                                 placeholder="Relation"
-                                className="bg-black border border-white/15 text-[10px] text-white p-1 rounded-sm outline-none"
+                                className="bg-navy border border-white/10 text-xs text-white p-2.5 rounded-lg outline-none focus:border-saffron"
                               />
                             </div>
-                            <div className="flex gap-2 justify-end mt-1">
-                              <button onClick={() => setEditingId(null)} className="font-hud text-[8px] text-white/50 hover:text-white">[CANCEL]</button>
-                              <button onClick={() => handleSaveEdit(contact._id)} className="font-hud text-[8px] text-cyan hover:text-white">[SAVE]</button>
+                            <div className="flex gap-3 justify-end mt-1 text-[10px]">
+                              <button onClick={() => setEditingId(null)} className="text-white/40 hover:text-white cursor-pointer">CANCEL</button>
+                              <button onClick={() => handleSaveEdit(contact._id)} className="text-saffron hover:text-saffron-light font-bold cursor-pointer">SAVE</button>
                             </div>
                           </div>
                         ) : (
                           <>
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-hud text-[11px] text-white/80">{contact.name}</span>
-                                <span className="font-hud text-[8px] bg-cyan/10 border border-cyan/20 text-cyan px-1 rounded-sm">{contact.relation.toUpperCase()}</span>
+                                <span className="text-sm font-semibold text-white/95">{contact.name}</span>
+                                <span className="text-[9px] font-bold bg-saffron/10 border border-saffron/20 text-saffron px-2 py-0.5 rounded-full">
+                                  {contact.relation.toUpperCase()}
+                                </span>
                               </div>
-                              <p className="font-hud text-[10px] text-white/40">{contact.phone}</p>
+                              <p className="text-xs text-white/40 font-medium">{contact.phone}</p>
                             </div>
-                            <div className="flex gap-3">
+                            <div className="flex gap-4 text-xs font-semibold">
                               <button
                                 onClick={() => startEdit(contact)}
-                                className="font-hud text-[8px] text-cyan/70 hover:text-cyan tracking-wider transition-colors"
+                                className="text-saffron/75 hover:text-saffron transition-colors cursor-pointer"
                               >
-                                [EDIT]
+                                Edit
                               </button>
                               <button
                                 onClick={() => handleDeleteContact(contact._id)}
-                                className="font-hud text-[8px] text-emergency/70 hover:text-emergency tracking-wider transition-colors"
+                                className="text-emergency/75 hover:text-emergency transition-colors cursor-pointer"
                               >
-                                [DELETE]
+                                Delete
                               </button>
                             </div>
                           </>
@@ -310,41 +317,41 @@ export default function DashboardSection() {
                 {/* Add Contact Form (if < 5) */}
                 {contacts.length < 5 && (
                   <form onSubmit={handleAddContact} className="pt-4 border-t border-white/5 space-y-3">
-                    <p className="font-hud text-[9px] text-white/30 tracking-widest">◆ ADD EMERGENCY RESPONDER</p>
+                    <p className="text-xs font-semibold text-white/50 tracking-wider">Register Responder Details</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <input
                         type="text"
                         value={newContact.name}
                         onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
                         placeholder="Name"
-                        className="bg-black/50 border border-white/10 focus:border-cyan/50 text-xs text-white p-2 rounded-sm outline-none transition-all placeholder:text-white/20"
+                        className="bg-navy border border-white/10 text-xs text-white p-2.5 rounded-lg outline-none focus:border-saffron placeholder:text-white/20"
                       />
                       <input
                         type="text"
                         value={newContact.phone}
                         onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
                         placeholder="Phone Number"
-                        className="bg-black/50 border border-white/10 focus:border-cyan/50 text-xs text-white p-2 rounded-sm outline-none transition-all placeholder:text-white/20"
+                        className="bg-navy border border-white/10 text-xs text-white p-2.5 rounded-lg outline-none focus:border-saffron placeholder:text-white/20"
                       />
                       <input
                         type="text"
                         value={newContact.relation}
                         onChange={(e) => setNewContact({ ...newContact, relation: e.target.value })}
                         placeholder="Relation (e.g. Mom)"
-                        className="bg-black/50 border border-white/10 focus:border-cyan/50 text-xs text-white p-2 rounded-sm outline-none transition-all placeholder:text-white/20"
+                        className="bg-navy border border-white/10 text-xs text-white p-2.5 rounded-lg outline-none focus:border-saffron placeholder:text-white/20"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full bg-cyan/10 border border-cyan/30 hover:border-cyan hover:bg-cyan/20 text-cyan hover:text-white font-hud text-[9px] tracking-widest p-2.5 rounded-sm transition-all duration-300 cursor-pointer"
+                      className="w-full bg-saffron hover:bg-saffron-dark text-white font-semibold text-xs tracking-wider py-3 rounded-lg shadow-md transition-all duration-200 cursor-pointer"
                     >
-                      REGISTER RESPONDER
+                      Save Emergency Responder
                     </button>
                   </form>
                 )}
               </div>
             )}
-          </HUDPanel>
+          </div>
         </div>
       </div>
     </section>

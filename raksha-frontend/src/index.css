@@ -1,30 +1,23 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════
-   RAKSHA DESIGN SYSTEM — Cinematic Emergency OS
+   RAKSHA DESIGN SYSTEM — Professional Safety App Theme
    ═══════════════════════════════════════════════════════════ */
 
 @theme {
   --color-navy: #0D1B2A;
-  --color-navy-light: #1B2D45;
-  --color-navy-dark: #060F1A;
-  --color-emergency: #FF2E2E;
-  --color-emergency-dark: #CC0000;
+  --color-navy-light: #1B263B;
+  --color-navy-dark: #070F1A;
   --color-saffron: #FF6B00;
-  --color-orange: #FF8A00;
-  --color-cyan: #00D9FF;
-  --color-cyan-dim: #00D9FF66;
+  --color-saffron-dark: #D65A00;
+  --color-light-gray: #F8F9FA;
+  --color-emergency: #D90429;
+  --color-emergency-dark: #B3001B;
   --color-white: #FFFFFF;
-  --color-white-10: #FFFFFF1A;
-  --color-white-20: #FFFFFF33;
-  --color-white-40: #FFFFFF66;
-  --color-white-60: #FFFFFF99;
-  --color-glass: #FFFFFF08;
-  --color-glass-border: #FFFFFF15;
+  --color-gray-dark: #2B2D42;
 
+  --font-poppins: 'Poppins', sans-serif;
   --font-orbitron: 'Orbitron', sans-serif;
-  --font-inter: 'Inter', sans-serif;
-  --font-rajdhani: 'Rajdhani', sans-serif;
 }
 
 /* ─── Base Reset ─── */
@@ -36,255 +29,171 @@
 
 html {
   scroll-behavior: smooth;
-  background: var(--color-navy-dark);
+  background-color: var(--color-navy);
   overflow-x: hidden;
 }
 
 body {
-  font-family: var(--font-inter);
+  font-family: var(--font-poppins);
   color: var(--color-white);
-  background: var(--color-navy-dark);
+  background-color: var(--color-navy);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-::selection {
-  background: var(--color-cyan);
-  color: var(--color-navy-dark);
+/* ─── Warli Watermark Background ─── */
+.warli-bg-watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url('/warli_bg.png');
+  background-size: 380px;
+  background-repeat: repeat;
+  opacity: 0.035; /* Subtle watermark */
 }
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--color-navy-dark);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-cyan-dim);
-  border-radius: 2px;
+  background: var(--color-saffron);
+  border-radius: 3px;
 }
 
-/* ─── Typography ─── */
-.font-hud {
-  font-family: var(--font-orbitron);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* ─── Professional UI Card ─── */
+.safety-card {
+  background: rgba(27, 38, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.font-display {
-  font-family: var(--font-rajdhani);
-  font-weight: 700;
+.safety-card:hover {
+  border-color: rgba(255, 107, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px -5px rgba(255, 107, 0, 0.06);
 }
 
-.text-glow {
-  text-shadow: 0 0 20px var(--color-cyan), 0 0 40px var(--color-cyan-dim);
+/* Light theme cards for higher trust visibility */
+.safety-card-light {
+  background: var(--color-white);
+  color: var(--color-navy-dark);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
-.text-glow-saffron {
-  text-shadow: 0 0 20px var(--color-saffron), 0 0 40px rgba(255, 107, 0, 0.4);
+/* ─── Buttons ─── */
+.btn-saffron {
+  background: var(--color-saffron);
+  color: var(--color-white);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.25);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-saffron:hover {
+  background: var(--color-saffron-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.35);
 }
 
-.text-glow-emergency {
-  text-shadow: 0 0 20px var(--color-emergency), 0 0 40px rgba(255, 46, 46, 0.4);
+.btn-outline {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
-
-/* ─── Glassmorphism ─── */
-.glass {
-  background: rgba(13, 27, 42, 0.6);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  border: 1px solid var(--color-glass-border);
-}
-
-.glass-light {
+.btn-outline:hover {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(30px) saturate(1.8);
-  -webkit-backdrop-filter: blur(30px) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-white);
 }
 
-.glass-cyan {
-  background: rgba(0, 217, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 217, 255, 0.15);
+/* ─── Prominent SOS Button ─── */
+.sos-pulse-ring {
+  animation: sos-ring-expand 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
-/* ─── HUD Corner Brackets ─── */
-.hud-bracket {
+@keyframes sos-ring-expand {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+/* Clean UI Section Container */
+.section-container {
   position: relative;
-}
-.hud-bracket::before,
-.hud-bracket::after {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-color: var(--color-cyan);
-  opacity: 0.6;
-}
-.hud-bracket::before {
-  top: -1px;
-  left: -1px;
-  border-top: 2px solid;
-  border-left: 2px solid;
-}
-.hud-bracket::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 2px solid;
-  border-right: 2px solid;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1.5rem 3rem 1.5rem;
+  z-index: 10;
 }
 
-/* ─── Animations ─── */
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-}
-
-@keyframes radar-sweep {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes scan-line {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-@keyframes emergency-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 46, 46, 0.2); }
-  50% { box-shadow: 0 0 60px rgba(255, 46, 46, 0.6), 0 0 120px rgba(255, 46, 46, 0.3); }
-}
-
-@keyframes ring-expand {
-  0% { transform: scale(0.5); opacity: 1; }
-  100% { transform: scale(3); opacity: 0; }
-}
-
-@keyframes glitch {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(2px, -2px); }
-  60% { transform: translate(-1px, -1px); }
-  80% { transform: translate(1px, 1px); }
-}
-
-@keyframes typing-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-@keyframes noise {
-  0%, 100% { background-position: 0 0; }
-  10% { background-position: -5% -10%; }
-  30% { background-position: 3% -15%; }
-  50% { background-position: 12% 9%; }
-  70% { background-position: 9% 4%; }
-  90% { background-position: -1% 7%; }
-}
-
-.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
-.animate-radar { animation: radar-sweep 4s linear infinite; }
-.animate-scan { animation: scan-line 3s linear infinite; }
-.animate-breathe { animation: breathe 4s ease-in-out infinite; }
-.animate-float { animation: float 6s ease-in-out infinite; }
-.animate-shimmer { animation: shimmer 3s linear infinite; }
-.animate-emergency { animation: emergency-pulse 1s ease-in-out infinite; }
-.animate-glitch { animation: glitch 0.3s ease-in-out infinite; }
-
-/* ─── Noise Overlay ─── */
-.noise-overlay {
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  animation: noise 8s steps(10) infinite;
-}
-
-/* ─── Emergency State ─── */
-.emergency-active {
-  animation: emergency-pulse 0.5s ease-in-out infinite;
-}
-
+/* Red Vignette only active during active emergencies */
 .emergency-vignette {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 100;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 46, 46, 0.3) 100%);
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(217, 4, 41, 0.15) 100%);
+  animation: emergency-breathe 2s ease-in-out infinite;
 }
 
-/* ─── Scan Line Overlay ─── */
-.scanlines {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9998;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
+@keyframes emergency-breathe {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
-/* ─── Section Styling ─── */
-.section-container {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  overflow: hidden;
+/* Removed Cyberpunk overlays */
+.noise-overlay, .scanlines {
+  display: none !important;
 }
 
-/* ─── Holographic Gradient ─── */
-.holo-gradient {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 217, 255, 0.1) 0%,
-    rgba(255, 107, 0, 0.05) 50%,
-    rgba(0, 217, 255, 0.1) 100%
-  );
+/* Custom Scrollbars for lists */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 0, 0.4);
+  border-radius: 2px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-saffron);
 }
 
-/* ─── Grid Background ─── */
-.grid-bg {
-  background-image: 
-    linear-gradient(rgba(0, 217, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 217, 255, 0.05) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-
-/* ─── Utility ─── */
-.clip-hexagon {
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-}
-
-.gradient-border {
-  border-image: linear-gradient(135deg, var(--color-cyan), var(--color-saffron)) 1;
+/* Leaflet map styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem;
+  z-index: 1;
+  background: #f4f3f0;
 }

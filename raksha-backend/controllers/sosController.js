@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 import { z } from 'zod';
 import SOSHistory from '../models/sosHistory.js';
+import EmergencyContact from '../models/contact.js';
+import User from '../models/user.js';
+import { sendWhatsAppMessage } from '../services/whatsappService.js';
 
 const triggerSOSSchema = z.object({
   latitude: z.number({ required_error: 'Latitude is required' }),
@@ -17,35 +20,60 @@ export const triggerSOS = async (req, res) => {
     const { latitude, longitude, notes } = validatedData;
 
     // Check if there is already an active SOS for this user
-    const existingActiveSOS = await SOSHistory.findOne({
+    let sosRecord = await SOSHistory.findOne({
       userId: req.user.id,
       status: 'active',
     });
 
-    if (existingActiveSOS) {
-      return res.status(200).json({
-        success: true,
-        message: 'Active SOS already exists',
-        data: existingActiveSOS,
+    let newTriggered = false;
+
+    if (!sosRecord) {
+      const sosId = `SOS-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      sosRecord = await SOSHistory.create({
+        userId: req.user.id,
+        sosId,
+        latitude,
+        longitude,
+        status: 'active',
+        notes: notes || 'Emergency SOS triggered',
       });
+      newTriggered = true;
     }
 
-    const sosId = `SOS-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    console.log(`[SOS ACTIVE] User: ${req.user.name}, ID: ${sosRecord.sosId}`);
 
-    const newSOS = await SOSHistory.create({
-      userId: req.user.id,
-      sosId,
-      latitude,
-      longitude,
-      status: 'active',
-      notes: notes || 'Emergency SOS triggered',
-    });
+    // If new SOS triggered, send Mock WhatsApp alerts to all emergency contacts
+    if (newTriggered) {
+      try {
+        const user = await User.findById(req.user.id);
+        const userName = user ? user.name : req.user.name || 'A RAKSHA User';
+        
+        const contacts = await EmergencyContact.find({ userId: req.user.id });
+        const trackingUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/track/${sosRecord.sosId}`;
+        
+        const currentTime = new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
 
-    console.log(`[SOS TRIGGERED] User: ${req.user.name}, ID: ${sosId}`);
+        const message = `🚨 RAKSHA ALERT - ${userName} needs help!\nLocation: https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}\nLive Track: ${trackingUrl}\nTime: ${currentTime}`;
+
+        if (contacts.length > 0) {
+          contacts.forEach(contact => {
+            sendWhatsAppMessage(contact.name, contact.phone, message);
+          });
+        } else {
+          console.log(`[MOCK WHATSAPP INFO] No emergency contacts configured for user ${userName} to alert.`);
+        }
+      } catch (err) {
+        console.error('[WHATSAPP DISPATCH ERROR]', err);
+      }
+    }
 
     res.status(201).json({
       success: true,
-      data: newSOS,
+      data: sosRecord,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -121,6 +149,25 @@ export const imSafeSOS = async (req, res) => {
       console.log(`[SOS SAFE EVENT EMITTED] Room: sos-${sosId}`);
     }
 
+    // Send Mock WhatsApp message to all contacts indicating safety
+    try {
+      const user = await User.findById(req.user.id);
+      const userName = user ? user.name : 'A RAKSHA User';
+      const contacts = await EmergencyContact.find({ userId: req.user.id });
+      
+      const lat = sosRecord.latitude;
+      const lng = sosRecord.longitude;
+      const message = `✅ ${userName} is now SAFE.\nLast Location: https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}`;
+
+      if (contacts.length > 0) {
+        contacts.forEach(contact => {
+          sendWhatsAppMessage(contact.name, contact.phone, message);
+        });
+      }
+    } catch (err) {
+      console.error('[WHATSAPP SAFE DISPATCH ERROR]', err);
+    }
+
     res.json({
       success: true,
       message: 'Status updated to SAFE successfully',
@@ -165,5 +212,34 @@ export const getActiveSOS = async (req, res) => {
   } catch (error) {
     console.error('[GET ACTIVE SOS ERROR]', error);
     res.status(500).json({ success: false, message: 'Server error fetching active SOS' });
+  }
+};
+
+// @desc    Get public tracking details for SOS
+// @route   GET /api/sos/public-track/:sosId
+// @access  Public
+export const getPublicSOS = async (req, res) => {
+  try {
+    const { sosId } = req.params;
+    const sosRecord = await SOSHistory.findOne({ sosId }).populate('userId', 'name');
+
+    if (!sosRecord) {
+      return res.status(404).json({ success: false, message: 'SOS record not found' });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        sosId: sosRecord.sosId,
+        latitude: sosRecord.latitude,
+        longitude: sosRecord.longitude,
+        status: sosRecord.status,
+        userName: sosRecord.userId ? sosRecord.userId.name : 'RAKSHA User',
+        updatedAt: sosRecord.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('[GET PUBLIC TRACK ERROR]', error);
+    res.status(500).json({ success: false, message: 'Server error fetching public tracking details' });
   }
 };

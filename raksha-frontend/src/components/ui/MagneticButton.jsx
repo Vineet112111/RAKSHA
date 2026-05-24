@@ -17,9 +17,9 @@ export default function MagneticButton({ children, onClick, variant = 'primary',
   }
 
   const variants = {
-    primary: 'bg-cyan/10 border-cyan/30 text-cyan hover:bg-cyan/20 hover:border-cyan/60 hover:shadow-[0_0_30px_rgba(0,217,255,0.3)]',
-    emergency: 'bg-emergency/10 border-emergency/30 text-emergency hover:bg-emergency/20 hover:border-emergency/60 hover:shadow-[0_0_30px_rgba(255,46,46,0.3)]',
-    saffron: 'bg-saffron/10 border-saffron/30 text-saffron hover:bg-saffron/20 hover:border-saffron/60 hover:shadow-[0_0_30px_rgba(255,107,0,0.3)]',
+    primary: 'bg-saffron text-white border-transparent hover:bg-saffron-dark shadow-md shadow-saffron/10 hover:shadow-lg hover:shadow-saffron/20',
+    emergency: 'bg-emergency text-white border-transparent hover:bg-emergency-dark shadow-md shadow-emergency/10 hover:shadow-lg hover:shadow-emergency/20',
+    outline: 'bg-transparent border-white/20 text-white/80 hover:bg-white/5 hover:border-white/40 hover:text-white',
   }
 
   return (
@@ -29,12 +29,12 @@ export default function MagneticButton({ children, onClick, variant = 'primary',
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       className={`
-        relative overflow-hidden font-hud text-sm tracking-widest
-        px-8 py-4 border rounded-sm
-        transition-all duration-500 cursor-pointer
+        relative overflow-hidden font-semibold text-xs tracking-wider uppercase
+        px-8 py-4 border rounded-xl
+        transition-all duration-300 cursor-pointer
         ${variants[variant]}
         ${className}
       `}
@@ -42,7 +42,7 @@ export default function MagneticButton({ children, onClick, variant = 'primary',
       {ripples.map(ripple => (
         <span
           key={ripple.id}
-          className="absolute rounded-full bg-white/20 animate-[ring-expand_0.8s_ease-out_forwards] pointer-events-none"
+          className="absolute rounded-full bg-white/25 animate-[ring-expand_0.8s_ease-out_forwards] pointer-events-none"
           style={{
             left: ripple.x - 5,
             top: ripple.y - 5,

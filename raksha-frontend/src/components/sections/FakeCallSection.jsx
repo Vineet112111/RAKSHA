@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const callers = [
-  { id: 'mom', name: 'आई', label: 'Mom', avatar: '👩' },
-  { id: 'boss', name: 'Manager', label: 'Boss', avatar: '👔' },
-  { id: 'police', name: 'Police Control', label: 'Police', avatar: '👮' },
-  { id: 'office', name: 'Emergency Office', label: 'Office', avatar: '🏢' },
+  { id: 'mom', name: 'आई (Mom)', label: 'Family Contact', avatar: '👩' },
+  { id: 'boss', name: 'Office Manager', label: 'Work Presets', avatar: '👔' },
+  { id: 'police', name: 'Police Helpline', label: 'National SOS', avatar: '👮' },
+  { id: 'office', name: 'Office Desk', label: 'Decoy Presets', avatar: '🏢' },
 ]
 
 export default function FakeCallSection() {
@@ -24,12 +24,17 @@ export default function FakeCallSection() {
   }
 
   return (
-    <section className="section-container min-h-screen relative" id="fake-call-section">
-      <div className="relative z-10 max-w-4xl mx-auto w-full">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-          <p className="font-hud text-[10px] tracking-[0.4em] text-cyan/60 mb-4">◆ DECOY SYSTEM</p>
-          <h2 className="font-hud text-3xl md:text-5xl font-bold text-glow mb-4">FAKE CALL</h2>
-          <p className="text-white/40 text-sm">Realistic emergency call simulation. Escape any situation instantly.</p>
+    <section className="py-24 relative" id="fake-call-section">
+      <div className="relative z-10 max-w-4xl mx-auto w-full px-6">
+        
+        <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+          <span className="text-xs font-bold text-saffron uppercase tracking-widest bg-saffron/10 px-3 py-1 rounded-full">
+            Decoy Helper
+          </span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mt-4 mb-2">Fake Call System</h2>
+          <p className="text-white/50 text-sm max-w-md mx-auto">
+            Schedule a decoy incoming phone call to safely excuse yourself from uncomfortable situations.
+          </p>
         </motion.div>
 
         {/* Caller selection */}
@@ -38,14 +43,14 @@ export default function FakeCallSection() {
             {callers.map(c => (
               <motion.button
                 key={c.id}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => startCall(c)}
-                className="glass rounded-lg p-6 text-center cursor-pointer hover:border-cyan/30 transition-all group"
+                className="safety-card rounded-2xl p-6 text-center cursor-pointer hover:border-saffron/30 transition-all group"
               >
-                <span className="text-4xl mb-3 block group-hover:scale-110 transition-transform">{c.avatar}</span>
-                <p className="font-display text-lg text-white">{c.name}</p>
-                <p className="font-hud text-[9px] text-white/40 tracking-wider mt-1">{c.label}</p>
+                <span className="text-4.5xl mb-3 block group-hover:scale-105 transition-transform">{c.avatar}</span>
+                <p className="text-base font-bold text-white/90">{c.name}</p>
+                <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mt-1.5">{c.label}</p>
               </motion.button>
             ))}
           </motion.div>
@@ -55,63 +60,74 @@ export default function FakeCallSection() {
         <AnimatePresence>
           {activeCaller && callState !== 'idle' && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="mx-auto max-w-sm"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="mx-auto max-w-xs"
             >
-              <div className="glass rounded-3xl overflow-hidden border border-white/10">
+              <div className="bg-navy-dark rounded-[2.25rem] overflow-hidden border border-white/10 shadow-2xl relative">
                 {/* Status bar */}
-                <div className="flex justify-between items-center px-6 py-2 text-[10px] text-white/40">
-                  <span>9:41</span>
-                  <div className="flex gap-1">
+                <div className="flex justify-between items-center px-6 py-3 text-[10px] text-white/30 font-medium">
+                  <span>10:42</span>
+                  <div className="flex gap-1.5">
                     <span>📶</span><span>🔋</span>
                   </div>
                 </div>
 
                 <div className="p-8 text-center">
-                  {/* Caller */}
+                  {/* Caller avatar */}
                   <div className="relative w-24 h-24 mx-auto mb-6">
-                    <div className={`absolute inset-0 rounded-full ${callState === 'ringing' ? 'animate-[ring-expand_1.5s_ease-out_infinite]' : ''} bg-cyan/10`} />
-                    <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-cyan/20 to-saffron/20 border border-white/10 flex items-center justify-center">
+                    {callState === 'ringing' && (
+                      <div className="absolute inset-0 rounded-full bg-saffron/10 animate-ping" />
+                    )}
+                    <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-saffron/20 to-emergency/10 border border-white/5 flex items-center justify-center">
                       <span className="text-5xl">{activeCaller.avatar}</span>
                     </div>
                   </div>
 
-                  <p className="font-display text-2xl text-white mb-1">{activeCaller.name}</p>
-                  <p className="font-hud text-[10px] text-white/40 tracking-widest mb-8">
-                    {callState === 'ringing' ? 'INCOMING CALL...' : callState === 'connected' ? '● CONNECTED' : 'CALL ENDED'}
+                  <p className="text-xl font-bold text-white mb-1">{activeCaller.name}</p>
+                  <p className="text-[10px] text-white/40 font-bold tracking-widest uppercase mb-8">
+                    {callState === 'ringing' ? 'Incoming Call...' : callState === 'connected' ? '● Connected' : 'Call Ended'}
                   </p>
 
-                  {/* Waveform */}
+                  {/* Sound Waveform */}
                   {callState === 'connected' && (
                     <div className="flex items-center justify-center gap-1 mb-8 h-8">
-                      {Array.from({ length: 20 }).map((_, i) => (
+                      {Array.from({ length: 16 }).map((_, i) => (
                         <motion.div
                           key={i}
-                          animate={{ height: [4, Math.random() * 28 + 4, 4] }}
-                          transition={{ duration: 0.5 + Math.random() * 0.5, repeat: Infinity, repeatType: 'reverse' }}
-                          className="w-1 bg-cyan/40 rounded-full"
+                          animate={{ height: [4, Math.random() * 24 + 4, 4] }}
+                          transition={{ duration: 0.4 + Math.random() * 0.4, repeat: Infinity, repeatType: 'reverse' }}
+                          className="w-1 bg-saffron/50 rounded-full"
                         />
                       ))}
                     </div>
                   )}
 
-                  {/* Actions */}
-                  <div className="flex justify-center gap-6">
+                  {/* Dial Actions */}
+                  <div className="flex justify-center gap-6 mt-4">
                     {callState === 'ringing' && (
                       <>
-                        <button onClick={endCall} className="w-16 h-16 rounded-full bg-emergency/20 border border-emergency/40 flex items-center justify-center cursor-pointer hover:bg-emergency/30 transition-colors">
-                          <span className="text-2xl">📵</span>
+                        <button 
+                          onClick={endCall} 
+                          className="w-14 h-14 rounded-full bg-emergency hover:bg-emergency-dark flex items-center justify-center cursor-pointer transition-colors shadow-lg shadow-emergency/20"
+                        >
+                          <span className="text-xl">📵</span>
                         </button>
-                        <button onClick={() => setCallState('connected')} className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center cursor-pointer hover:bg-green-500/30 transition-colors">
-                          <span className="text-2xl">📞</span>
+                        <button 
+                          onClick={() => setCallState('connected')} 
+                          className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center cursor-pointer transition-colors shadow-lg shadow-green-500/20"
+                        >
+                          <span className="text-xl">📞</span>
                         </button>
                       </>
                     )}
                     {callState === 'connected' && (
-                      <button onClick={endCall} className="w-16 h-16 rounded-full bg-emergency/20 border border-emergency/40 flex items-center justify-center cursor-pointer hover:bg-emergency/30 transition-colors">
-                        <span className="text-2xl">📵</span>
+                      <button 
+                        onClick={endCall} 
+                        className="w-14 h-14 rounded-full bg-emergency hover:bg-emergency-dark flex items-center justify-center cursor-pointer transition-colors shadow-lg shadow-emergency/20"
+                      >
+                        <span className="text-xl">📵</span>
                       </button>
                     )}
                   </div>
